@@ -32,7 +32,9 @@ public class PushController {
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/gcm")
   public void sendGcmPush(@Auth Server server, @Valid GcmMessage gcmMessage) {
-    gcmSender.sendMessage(gcmMessage);
+    if (gcmSender != null) {
+      gcmSender.sendMessage(gcmMessage);
+    }
   }
 
   @Timed
@@ -42,7 +44,9 @@ public class PushController {
   public void sendApnPush(@Auth Server server, @Valid ApnMessage apnMessage)
       throws TransientPushFailureException
   {
-    apnSender.sendMessage(apnMessage);
+    if (apnSender != null) {
+      apnSender.sendMessage(apnMessage);
+    }
   }
 
 }

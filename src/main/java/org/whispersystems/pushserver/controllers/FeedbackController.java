@@ -29,7 +29,11 @@ public class FeedbackController {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/gcm/")
   public UnregisteredEventList getUnregisteredGcmDevices(@Auth Server server) {
-    return new UnregisteredEventList(gcmQueue.get(server.getName()));
+    if(gcmQueue != null) {
+      return new UnregisteredEventList(gcmQueue.get(server.getName()));
+    } else {
+      return new UnregisteredEventList();
+    }
   }
 
   @Timed
@@ -37,7 +41,11 @@ public class FeedbackController {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/apn/")
   public UnregisteredEventList getUnregisteredApnDevices(@Auth Server server) {
-    return new UnregisteredEventList(apnQueue.get(server.getName()));
+    if(apnQueue != null) {
+      return new UnregisteredEventList(apnQueue.get(server.getName()));
+    } else {
+      return new UnregisteredEventList();
+    }
   }
 
 }

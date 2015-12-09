@@ -55,8 +55,10 @@ public class PushServer extends Application<PushServerConfiguration> {
     APNSender apnSender = initializeApnSender(redisClient, apnQueue, config.getApnConfiguration());
     GCMSender gcmSender = initializeGcmSender(gcmQueue, config.getGcmConfiguration());
 
-    environment.lifecycle().manage(apnSender);
-    environment.lifecycle().manage(gcmSender);
+    if (apnSender != null)
+      environment.lifecycle().manage(apnSender);
+    if (gcmSender != null)
+      environment.lifecycle().manage(gcmSender);
 
     environment.jersey().register(AuthFactory.binder(new BasicAuthFactory<>(serverAuthenticator, "PushServer", Server.class)));
     environment.jersey().register(new PushController(apnSender, gcmSender));
@@ -69,23 +71,31 @@ public class PushServer extends Application<PushServerConfiguration> {
                                         UnregisteredQueue apnQueue,
                                         ApnConfiguration configuration)
   {
-    return new APNSender(redisClient, apnQueue,
-                         configuration.getPushCertificate(),
-                         configuration.getPushKey(),
-                         configuration.getVoipCertificate(),
-                         configuration.getVoipKey(),
-                         configuration.isFeedbackEnabled());
+    if (configuration != null ) {
+      return new APNSender(redisClient, apnQueue,
+                           configuration.getPushCertificate(),
+                           configuration.getPushKey(),
+                           configuration.getVoipCertificate(),
+                           configuration.getVoipKey(),
+                           configuration.isFeedbackEnabled());
+    } else {
+      return null;
+    }
   }
 
   private GCMSender initializeGcmSender(UnregisteredQueue gcmQueue,
                                         GcmConfiguration configuration)
   {
-    if (configuration.isXmpp()) {
-      logger.info("Using XMPP GCM Interface.");
-      return new XmppGCMSender(gcmQueue, configuration.getSenderId(), configuration.getApiKey());
+    if (configuration != null ) {
+      if (configuration.isXmpp()) {
+        logger.info("Using XMPP GCM Interface.");
+        return new XmppGCMSender(gcmQueue, configuration.getSenderId(), configuration.getApiKey());
+      } else {
+        logger.info("Using HTTP GCM Interface.");
+        return new HttpGCMSender(gcmQueue, configuration.getApiKey(), configuration.getRedphoneApiKey());
+      }
     } else {
-      logger.info("Using HTTP GCM Interface.");
-      return new HttpGCMSender(gcmQueue, configuration.getApiKey(), configuration.getRedphoneApiKey());
+      return null;
     }
   }
 
